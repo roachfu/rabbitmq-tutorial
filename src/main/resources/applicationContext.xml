@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+    <context:component-scan base-package="com.roachfu.tutorial"></context:component-scan>
+
+    <rabbit:connection-factory id="connectionFactory" host="localhost" username="guest" password="guest" port="5672"/>
+
+    <rabbit:template id="rabbitTemplate" connection-factory="connectionFactory"
+                     exchange="roachfu.exchange" routing-key="foo.bar"/>
+
+    <rabbit:admin connection-factory="connectionFactory" />
+
+    <rabbit:queue name="roachfu.queue" />
+
+    <rabbit:topic-exchange name="roachfu.exchange">
+        <rabbit:bindings>
+            <rabbit:binding queue="roachfu.queue" pattern="foo.*" />
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+
+    <rabbit:listener-container connection-factory="connectionFactory">
+        <rabbit:listener ref="foo" method="listen" queue-names="roachfu.queue" />
+    </rabbit:listener-container>
+
+    <bean id="foo" class="com.roachfu.tutorial.rabbitmq.spring.Foo" />
+
+</beans>
